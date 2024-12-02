@@ -1,18 +1,11 @@
 #!/opt/homebrew/bin/python3
 
-import re
 import functools
 
-left = []
-right = []
-with open("../input/day1.txt", newline="") as f:
-  for row in f.readlines():
-    m = re.match(r"(\d+)   (\d+)", row)
-    left.append(int(m[1]))
-    right.append(int(m[2]))
+lines = open("../input/day1.txt", newline="").readlines()
 
-left = sorted(left)
-right = sorted(right)
+left = sorted([int(s[0]) for row in lines if (len(s := row.split("   ")) == 2)])
+right = sorted([int(s[1]) for row in lines if (len(s := row.split("   ")) == 2)])
 
 locations = zip(left, right)
 
