@@ -1,12 +1,12 @@
 #!/opt/homebrew/bin/python3
 
 import functools
+import numpy as np
 
 lines = open("../input/day1.txt", newline="").readlines()
 
-left = sorted([int(s[0]) for row in lines if (len(s := row.split("   ")) == 2)])
-right = sorted([int(s[1]) for row in lines if (len(s := row.split("   ")) == 2)])
-
+locations = np.transpose(np.array([[int(s[0]), int(s[1])] for row in lines if (len(s := row.split("   ")) == 2)])).tolist()
+left, right = sorted(locations[0]), sorted(locations[1])
 locations = zip(left, right)
 
 total = functools.reduce(lambda x, y: x + abs(y[0] - y[1]), locations, 0)
