@@ -18,7 +18,7 @@ for line in lines:
   else:
     updates.append([int(n) for n in line.split(",")])
 
-invalid_updates = []
+invalid_updates: List[List[int]] = []
 for update in updates:
   for rule in rules:
     try:
@@ -39,3 +39,26 @@ for update in valid_updates:
   total += update[int(len(update) / 2)]
 
 print(f"Part 1: {total}")
+
+# Re-validify invalid updates
+# Basically bubble sort :(
+for update in invalid_updates:
+  while True:
+    invalid = False
+    for rule in rules:
+      try:
+        left = update.index(rule[0])
+        right = update.index(rule[1])
+        if left > right:
+          update[left], update[right] = update[right], update[left]
+          invalid = True
+      except ValueError:
+        pass
+    if not invalid:
+      break
+
+total = 0
+for update in invalid_updates:
+  total += update[int(len(update) / 2)]
+
+print(f"Part 2: {total}")
