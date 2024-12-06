@@ -42,6 +42,15 @@ print(f"Part 1: {total}")
 
 # Re-validify invalid updates
 # Basically bubble sort :(
+# Improvement idea:
+# - Create a dummy "update" that includes each of the unique values from all rules
+# - Sort this full update probably using bubble sort
+# - Then, create a map to the indices. E.g. if [54, 32, 12], then {54: 0, 32: 1, 12: 2, ...}
+# - Pass through all "real" updates once and convert to ordinals, so [32, 12, 54] -> [1, 2, 0]
+# - Pt 1: simply check if the update is sorted using a linear "is_sorted()" function
+#   - e.g. all(l[i] <= l[i+1] for i in range(len(l) - 1))
+# - Pt 2: in same loop as Pt 1, .sort() and get middle value of the invalid updates
+# - Should be much faster than bubble sorting every update
 for update in invalid_updates:
   while True:
     invalid = False
