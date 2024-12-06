@@ -2,7 +2,6 @@
 
 import sys
 import numpy as np
-import time
 
 
 def rotate_cw(dir):
@@ -26,12 +25,11 @@ def move(pos, dir, grid):
   nx, ny = pos + dir
   try:
     if grid[ny][nx] == "#":
-      return pos, rotate_cw(dir)
-    else:
-      return np.array([nx, ny]), dir
+      dir = rotate_cw(dir)
   except IndexError:
     # Let the guard walk out of the grid
-    return np.array([nx, ny]), dir
+    pass
+  return pos + dir, dir
 
 
 lines = [l.strip() for l in open(sys.argv[1]).readlines()]
