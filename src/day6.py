@@ -7,6 +7,7 @@ from typing import Set, Tuple, List
 import copy
 from multiprocessing import Pool, cpu_count
 import time
+import itertools
 
 def rotate_cw(dir) -> NDArray:
   # [x, y] -> [y, -x]
@@ -17,11 +18,10 @@ def find_starting_pos(grid) -> NDArray:
   for y in range(len(grid)):
     for x in range(len(grid[0])):
       if grid[y][x] == "^":
-        grid[y][x] = "*"
         return np.array([x, y])
 
 
-def inbounds(pos, dim):
+def in_bounds(pos, dim):
   return (0 <= pos[0] < dim) and (0 <= pos[1] < dim)
 
 
@@ -54,7 +54,7 @@ def part2(ob) -> int:
   # an infinite loop
   while True:
     pos, dir = move(pos, dir, grid)
-    if not inbounds(pos, starting_dim):
+    if not in_bounds(pos, starting_dim):
       # guard leaves grid, don't count it
       return 0
     loc_sig = (pos[0], pos[1], dir[0], dir[1])
@@ -78,11 +78,12 @@ if __name__ == "__main__":
   obs: Set[Tuple[int, int]] = set()
 
   while True:
-    pos, dir = move(pos, dir, grid)
-    if not inbounds(pos, starting_dim):
-      break
     x, y = pos
     grid[y][x] = "*"
+    pos, dir = move(pos, dir, grid)
+    if not in_bounds(pos, starting_dim):
+      break
+    x, y = pos
     # Add possible obstacle locations used later for part 2
     obs.add((int(x), int(y)))
     # print("==========")
@@ -94,6 +95,7 @@ if __name__ == "__main__":
   print(f"Part 1: {np.count_nonzero(grid == "*")}")
 
   # Don't want starting pos to be a viable obstacle location per instructions
+  # obs = set(itertools.product(range(len(grid)), repeat=2))
   obs.discard((starting_pos[0], starting_pos[1]))
 
   with Pool(cpu_count()) as pool:
