@@ -9,6 +9,15 @@ from multiprocessing import Pool, cpu_count
 import time
 import itertools
 
+
+def print_grid(grid):
+  print("==========")
+  for line in grid:
+    print("".join(line))
+  print("==========")
+  time.sleep(0.2)
+
+
 def rotate_cw(dir) -> NDArray:
   # [x, y] -> [y, -x]
   return np.array([-dir[1], dir[0]])
@@ -28,13 +37,13 @@ def in_bounds(pos, dim):
 def move(pos: NDArray, dir: NDArray, grid):
   nx, ny = pos + dir
   try:
-    while grid[ny][nx] == "#":
+    if grid[ny][nx] == "#":
       dir = rotate_cw(dir)
-      nx, ny = pos + dir
+      return pos, dir
+    else:
+      return pos + dir, dir
   except IndexError:
-    # Let the guard walk out of the grid
-    pass
-  return pos + dir, dir
+    return pos + dir, dir
 
 
 def count_walls(grid):
@@ -53,12 +62,16 @@ def part2(ob) -> int:
   # loop until either we exit the grid, or we're trapped in
   # an infinite loop
   while True:
+    # Don't need to write the "*" for pt 2 but useful for visual debug
+    x, y = pos
+    grid[y][x] = "*"
     pos, dir = move(pos, dir, grid)
     if not in_bounds(pos, starting_dim):
       # guard leaves grid, don't count it
       return 0
     loc_sig = (pos[0], pos[1], dir[0], dir[1])
     if loc_sig in visited:
+      #print_grid(grid)
       return 1
     visited.add(loc_sig)
 
@@ -86,11 +99,6 @@ if __name__ == "__main__":
     x, y = pos
     # Add possible obstacle locations used later for part 2
     obs.add((int(x), int(y)))
-    # print("==========")
-    # for line in grid:
-    #   print("".join(line))
-    # print("==========")
-    # time.sleep(0.2)
 
   print(f"Part 1: {np.count_nonzero(grid == "*")}")
 
@@ -106,4 +114,5 @@ if __name__ == "__main__":
   # That's not the right answer; your answer is too low.
   # Part 2: 2134, 2135, 2136
   # That's not the right answer (not sure if high or low):
-  # 2261, 2269, 2270
+  # 2261 ( "0 <" bug), 2269, 2270
+  # Right answer, 2262, but not sure why...
