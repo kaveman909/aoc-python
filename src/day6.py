@@ -3,9 +3,10 @@
 import sys
 import numpy as np
 from numpy.typing import NDArray
-from typing import Set, Tuple
+from typing import Set, Tuple, List
 import copy
 from multiprocessing import Pool, cpu_count
+import time
 
 def rotate_cw(dir) -> NDArray:
   # [x, y] -> [y, -x]
@@ -36,12 +37,16 @@ def move(pos: NDArray, dir: NDArray, grid):
   return pos + dir, dir
 
 
-def part2(ob):
+def count_walls(grid):
+  return np.count_nonzero(grid == "#")
+
+
+def part2(ob) -> int:
   # reset grid, dir, pos, visited
   grid = copy.deepcopy(starting_grid)
   dir = copy.deepcopy(starting_dir)
   pos = copy.deepcopy(starting_pos)
-  visited = []
+  visited = set()
   # introduce new obstacle
   x, y = ob
   grid[y][x] = "#"
@@ -54,9 +59,9 @@ def part2(ob):
       return 0
     loc_sig = (pos[0], pos[1], dir[0], dir[1])
     if loc_sig in visited:
-      print(ob)
       return 1
-    visited.append(loc_sig)
+    visited.add(loc_sig)
+
 
 lines = [l.strip() for l in open(sys.argv[1]).readlines()]
 starting_grid = np.array([[c for c in line] for line in lines])
@@ -80,22 +85,23 @@ if __name__ == "__main__":
     grid[y][x] = "*"
     # Add possible obstacle locations used later for part 2
     obs.add((int(x), int(y)))
+    # print("==========")
+    # for line in grid:
+    #   print("".join(line))
+    # print("==========")
+    # time.sleep(0.2)
 
   print(f"Part 1: {np.count_nonzero(grid == "*")}")
 
   # Don't want starting pos to be a viable obstacle location per instructions
-  try:
-    obs.remove((starting_pos[0], starting_pos[1]))
-  except KeyError:
-    pass
+  obs.discard((starting_pos[0], starting_pos[1]))
 
   with Pool(cpu_count()) as pool:
-    results = pool.map(part2, obs)
+    results: List[int] = pool.map(part2, obs)
 
   print(f"Part 2: {results.count(1)}")
 
   # That's not the right answer; your answer is too low.
   # Part 2: 2134, 2135, 2136
   # That's not the right answer (not sure if high or low):
-  # 2261, 2269
-  
+  # 2261, 2269, 2270
