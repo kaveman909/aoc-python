@@ -40,3 +40,22 @@ for _, v in map.items():
         antinodes.add(tuple(an))
 
 print(f"Part 1: {len(antinodes)}")
+
+antinodes2: Set[Tuple[int, int]] = set()
+
+for _, v in map.items():
+  combos = itertools.combinations(v, 2)
+  for combo in combos:
+    a1 = np.array(combo[0])
+    a2 = np.array(combo[1])
+    diff = a1 - a2
+    # start at a1, go +diff until oob
+    # start at a2, go -diff until oob
+    while in_bounds(a1):
+      antinodes2.add(tuple(a1))
+      a1 += diff
+    while in_bounds(a2):
+      antinodes2.add(tuple(a2))
+      a2 -= diff
+
+print(f"Part 2: {len(antinodes2)}")
