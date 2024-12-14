@@ -31,19 +31,19 @@ def populate_graph(grid: NDArray,
 
 def dfs(graph: Dict[Tuple[int, int, int], List[Tuple[int, int, int]]],
         node: Tuple[int, int, int],
-        visited: Set[Tuple[int, int, int]],
         terminals: Set[Tuple[int, int, int]]) -> None:
-
-  if node in visited:
-    return
-  visited.add(node)
 
   if node not in graph:
     terminals.add(node)
-    return
+    if node[2] == 9:
+      return 1
+    return 0
 
+  total = 0
   for neighbor in graph[node]:
-    dfs(graph, neighbor, visited, terminals)
+    total += dfs(graph, neighbor, terminals)
+  
+  return total
 
 
 def count_peaks(terminals: Set[Tuple[int, int, int]]) -> int:
@@ -64,12 +64,12 @@ for row, col in coords:
   populate_graph(grid, graph, trailheads, row, col)
 
 total: int = 0
+total2: int = 0
 for trailhead in trailheads:
-  visited: Set[Tuple[int, int, int]] = set()
   terminals: Set[Tuple[int, int, int]] = set()
 
-  dfs(graph, trailhead, visited, terminals)
-
+  total2 += dfs(graph, trailhead, terminals)
   total += count_peaks(terminals)
 
 print(f"Part 1: {total}")
+print(f"Part 2: {total2}")
