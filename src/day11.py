@@ -1,31 +1,45 @@
 #!/opt/homebrew/bin/python3
 
 import sys
-# from collections import deque
+from typing import Dict
 
-# If the stone is engraved with the number 0, it is replaced by a stone engraved with the number 1.
-# If the stone is engraved with a number that has an even number of digits, it is replaced by two stones. The left half of the digits are engraved on the new left stone, and the right half of the digits are engraved on the new right stone. (The new numbers don't keep extra leading zeroes: 1000 would become stones 10 and 0.)
-# If none of the other rules apply, the stone is replaced by a new stone; the old stone's number multiplied by 2024 is engraved on the new stone.
 
-stones = [int(s) for s in open(sys.argv[1]).readlines()[0].strip().split(" ")]
+def add_stones(stone, count, stones):
+  if stone not in stones:
+    stones[stone] = 0
+  stones[stone] += count
 
-def get_new_stones(stones):
-  new_stones = []
-  for stone in stones:
+
+def get_new_stones(stones: Dict[int, int]):
+  new_stones = {}
+  for stone, count in stones.items():
     if stone == 0:
-      new_stones.append(1)
+      add_stones(1, count, new_stones)
+
     elif len(str(stone)) % 2 == 0:
       str_stone = str(stone)
       len_stone = len(str_stone)
-      new_stones.append(int(str_stone[:int(len_stone/2)]))
-      new_stones.append(int(str_stone[int(len_stone/2):]))
+      lstone = int(str_stone[:int(len_stone / 2)])
+      rstone = int(str_stone[int(len_stone / 2):])
+      add_stones(lstone, count, new_stones)
+      add_stones(rstone, count, new_stones)
+
     else:
-      new_stones.append(stone * 2024)
-  
+      add_stones(stone * 2024, count, new_stones)
+
   return new_stones
 
 
-for _ in range(25):
+stones_init = [int(s)
+               for s in open(sys.argv[1]).readlines()[0].strip().split(" ")]
+
+stones = {}
+for stone in stones_init:
+  add_stones(stone, 1, stones)
+
+for i in range(75):
   stones = get_new_stones(stones)
-  
-print(f"Part 1: {len(stones)}")
+  if i == 24:
+    print(f"Part 1: {sum([v for _, v in stones.items()])}")
+
+print(f"Part 2: {sum([v for _, v in stones.items()])}")
