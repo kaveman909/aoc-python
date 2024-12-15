@@ -5,12 +5,13 @@ from typing import List, Tuple, Set
 from dataclasses import dataclass
 import numpy as np
 from itertools import product
+from functools import reduce
 
 
 @dataclass
 class Plot:
   area: int = 0
-  perimiter: int = 0
+  perimeter: int = 0
   sides: int = 0
   name: str = ""
 
@@ -19,8 +20,7 @@ def update_sides(coord: Tuple[int, int],
                  dir: Tuple[int, int],
                  plot: Plot,
                  sides: Set[Tuple[int, int, int, int]]):
-  # if dir in [(0, 1), (0, -1)], vertical side
-  # check (1, 0), (-1, 0) from coord
+
   side = dir + coord
   row, col = coord
   _, dc = dir
@@ -59,12 +59,12 @@ def garden_walk(coord: Tuple[int, int],
       plot.area += 1
     else:
       # In a new plot, treat like "outside garden"
-      plot.perimiter += 1
+      plot.perimeter += 1
       update_sides(coord, dir, plot, sides)
       return
   else:
     # Outside garden
-    plot.perimiter += 1
+    plot.perimeter += 1
     update_sides(coord, dir, plot, sides)
     return
 
@@ -96,11 +96,5 @@ while coords:
   # filter out already-visited coords
   coords = coords.difference(visited)
 
-total = 0
-total2 = 0
-for plot in plots:
-  total += plot.area * plot.perimiter
-  total2 += plot.area * plot.sides
-
-print(f"Part 1: {total}")
-print(f"Part 2: {total2}")
+print(f"Part 1: {reduce(lambda x, y: x + (y.area * y.perimeter), plots, 0)}")
+print(f"Part 2: {reduce(lambda x, y: x + (y.area * y.sides), plots, 0)}")
