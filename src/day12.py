@@ -30,12 +30,16 @@ def update_sides(coord: Tuple[int, int],
     below = dir + (row + 1, col)
     if above not in sides and below not in sides:
       plot.sides += 1
+    elif above in sides and below in sides:
+      plot.sides -= 1
   else:
     # horizontal side
     left = dir + (row, col - 1)
     right = dir + (row, col + 1)
     if right not in sides and left not in sides:
       plot.sides += 1
+    elif right in sides and left in sides:
+      plot.sides -= 1
   sides.add(side)
 
 
@@ -93,8 +97,10 @@ while coords:
   coords = coords.difference(visited)
 
 total = 0
+total2 = 0
 for plot in plots:
-  print(plot)
   total += plot.area * plot.perimiter
+  total2 += plot.area * plot.sides
 
 print(f"Part 1: {total}")
+print(f"Part 2: {total2}")
