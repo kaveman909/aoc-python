@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/python3
 
 import sys
-from typing import Dict, List, Tuple, Set
+from typing import List, Tuple, Set
 from dataclasses import dataclass
 import numpy as np
 from itertools import product
@@ -11,12 +11,39 @@ from itertools import product
 class Plot:
   area: int = 0
   perimiter: int = 0
+  sides: int = 0
   name: str = ""
 
 
+def update_sides(coord: Tuple[int, int],
+                 dir: Tuple[int, int],
+                 plot: Plot,
+                 sides: Set[Tuple[int, int, int, int]]):
+  # if dir in [(0, 1), (0, -1)], vertical side
+  # check (1, 0), (-1, 0) from coord
+  side = dir + coord
+  row, col = coord
+  _, dc = dir
+  if dc != 0:
+    # vertical side
+    above = dir + (row - 1, col)
+    below = dir + (row + 1, col)
+    if above not in sides and below not in sides:
+      plot.sides += 1
+  else:
+    # horizontal side
+    left = dir + (row, col - 1)
+    right = dir + (row, col + 1)
+    if right not in sides and left not in sides:
+      plot.sides += 1
+  sides.add(side)
+
+
 def garden_walk(coord: Tuple[int, int],
+                dir: Tuple[int, int],
                 visited: Set[Tuple[int, int]],
-                plot: Plot):
+                plot: Plot,
+                sides: Set[Tuple[int, int, int, int]]):
   if coord in visited:
     return
   row, col = coord
@@ -29,10 +56,12 @@ def garden_walk(coord: Tuple[int, int],
     else:
       # In a new plot, treat like "outside garden"
       plot.perimiter += 1
+      update_sides(coord, dir, plot, sides)
       return
   else:
     # Outside garden
     plot.perimiter += 1
+    update_sides(coord, dir, plot, sides)
     return
 
   # If we're here, we're inside garden, and in same plot,
@@ -40,7 +69,7 @@ def garden_walk(coord: Tuple[int, int],
   directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
   for direction in directions:
     dr, dc = direction
-    garden_walk((row + dr, col + dc), visited, plot)
+    garden_walk((row + dr, col + dc), direction, visited, plot, sides)
 
 
 garden = np.array([[c for c in line.strip()]
@@ -55,8 +84,9 @@ while coords:
   coord = coords.pop()
   plot = Plot(name=str(garden[coord]))
   visited = set()
+  sides = set()
 
-  garden_walk(coord, visited, plot)
+  garden_walk(coord, None, visited, plot, sides)
   plots.append(plot)
 
   # filter out already-visited coords
@@ -64,6 +94,7 @@ while coords:
 
 total = 0
 for plot in plots:
+  print(plot)
   total += plot.area * plot.perimiter
 
 print(f"Part 1: {total}")
