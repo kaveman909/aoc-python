@@ -17,22 +17,28 @@ def parse_file(file_path: str) -> List[Dict[str, Tuple[int, int]]]:
 
 
 behaviors = parse_file(sys.argv[1])
-tol = 1e-6
-total = 0
+tol = 1e-3
 
-for behavior in behaviors:
-  coefs = np.array([[behavior["Button A"][0],
-                    behavior["Button B"][0]],
-                   [behavior["Button A"][1],
-                    behavior["Button B"][1]]])
 
-  consts = np.array([behavior["Prize"][0],
-                     behavior["Prize"][1]])
+def play_game(offset):
+  total = 0
+  for behavior in behaviors:
+    coefs = np.array([[behavior["Button A"][0],
+                      behavior["Button B"][0]],
+                      [behavior["Button A"][1],
+                      behavior["Button B"][1]]])
 
-  soln = np.linalg.solve(coefs, consts)
-  is_near_int = np.allclose(soln, np.round(soln), atol=tol)
+    consts = np.array([behavior["Prize"][0] + offset,
+                      behavior["Prize"][1] + offset])
 
-  if soln[0] <= 100.0 and soln[1] <= 100.0 and is_near_int:
-    total += 3 * soln[0] + 1 * soln[1]
+    soln = np.linalg.solve(coefs, consts)
+    is_near_int = np.abs(soln - np.round(soln)) < tol
+    is_near_int = is_near_int[0] and is_near_int[1]
 
-print(f"Part 1: {int(total)}")
+    if is_near_int:
+      total += 3 * soln[0] + 1 * soln[1]
+  return int(total)
+
+
+print(f"Part 1: {play_game(0)}")
+print(f"Part 2: {play_game(10000000000000)}")
