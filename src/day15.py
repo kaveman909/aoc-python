@@ -2,8 +2,10 @@
 
 import sys
 from numpy import array, where, ndindex
+from numpy.typing import NDArray
 from collections import deque
 from typing import List
+
 
 lines = open(sys.argv[1]).readlines()
 split = lines.index("\n")
@@ -31,6 +33,11 @@ direction_map = {'<': array((0, -1)),
                  'v': array((1, 0)),
                  '>': array((0, 1)),
                  '^': array((-1, 0))}
+
+manual_move_map = {'a': '<',
+                   's': 'v',
+                   'd': '>',
+                   'w': '^'}
 
 bot = array([int(i[0]) for i in where(grid == '@')])
 
@@ -64,7 +71,63 @@ print(f"Part 1: {total}")
 
 #################################################
 
+
+def is_leftright(view: NDArray):
+  return view[1] != 0
+
+
+def ndarray_in(arr, list_arr):
+  return tuple(arr) in [tuple(arr_elem) for arr_elem in list_arr]
+
+
+def chain(view: NDArray, current: NDArray, grid, locations: List[NDArray]) -> bool:
+  next_space = tuple(current + view)
+  if (grid[next_space] == "[" or grid[next_space] == "]") and is_leftright(view):
+    a = chain(view, current + view, grid, locations)
+    if not ndarray_in(current + view, locations):
+      locations.append(current + view)
+    return a
+  elif grid[next_space] == "[":
+    a = chain(view, current + view, grid, locations)
+    b = chain(view, current + view + direction_map[">"], grid, locations)
+    if not ndarray_in(current + view, locations):
+      locations.append(current + view)
+      locations.append(current + view + direction_map[">"])
+    return a and b
+  elif grid[next_space] == "]":
+    a = chain(view, current + view, grid, locations)
+    b = chain(view, current + view + direction_map["<"], grid, locations)
+    if not ndarray_in(current + view, locations):
+      locations.append(current + view)
+      locations.append(current + view + direction_map["<"])
+    return a and b
+  elif grid[next_space] == "#":
+    return False
+  elif grid[next_space] == ".":
+    return True
+
+
 bot = array([int(i[0]) for i in where(grid2 == '@')])
 
-for movement in movements:
-  pass
+
+for move in movements:
+  view = direction_map[move]
+  locations: List[NDArray] = []
+  should_move = chain(view, bot, grid2, locations)
+  if should_move:
+    for loc in locations:
+      cur_spot = tuple(loc)
+      move_spot = tuple(loc + view)
+      grid2[move_spot] = grid2[cur_spot]
+      grid2[cur_spot] = "."
+    # finally, move bot
+    grid2[tuple(bot)] = "."
+    bot += view
+    grid2[tuple(bot)] = "@"
+
+total = 0
+for i in ndindex(grid2.shape):
+  if grid2[i] == "[":
+    total += i[0]*100 + i[1]
+
+print(f"Part 2: {total}")
