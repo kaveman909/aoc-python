@@ -1,5 +1,5 @@
 import sys
-from numpy import array, where, array_equal
+from numpy import array, where, array_equal, set_printoptions
 from itertools import product
 from typing import Set, Tuple, List, Dict
 from numpy.typing import NDArray
@@ -60,6 +60,21 @@ def visit(node_k: Tuple,
   unvisited.pop(node_k)
 
 
+def walk_back(node_k: Tuple,
+              visited: Dict[Tuple, Node]):
+  global pt2_counter
+  node_v = visited[node_k]
+
+  # For each neighbor, walk back if cost is lower
+  for _ in range(4):
+    neighbor = tuple(array(node_k) + node_v.dir)
+    if neighbor in visited:
+      if visited[neighbor].dist < node_v.dist:
+        pt2_counter += 1
+        walk_back(neighbor, visited)
+    node_v.dir = clkw(node_v.dir)
+
+
 maze = array([[c for c in line.strip()]
              for line in open(sys.argv[1]).readlines()])
 
@@ -69,8 +84,14 @@ end: NDArray = array(tuple(w[0] for w in where(maze == "E")))
 unvisited: Dict[Tuple, Node] = {tuple(start): Node(array((0, 1)), 0)}
 visited: Dict[Tuple, Node] = {}
 
-while tuple(end) not in visited:
+while len(unvisited) != 0:
   node = find_min_node(unvisited)
   visit(node, visited, unvisited)
 
 print(f"Part 1: {visited[tuple(end)].dist}")
+
+# Starting at the "E", go to each neighbor that has a lower cost
+# Recurse until all lowest-cost paths reach the "S"
+pt2_counter = 0
+walk_back(tuple(end), visited)
+print(pt2_counter)
