@@ -20,53 +20,44 @@ def cclkw(d):
 
 @dataclass
 class Node:
-  pos: NDArray
   dir: NDArray
   dist: int = sys.maxsize
 
 
-def pos_in_node_list(pos: NDArray, node_list: List[Node]):
-  for index, node in enumerate(node_list):
-    if array_equal(node.pos, pos):
-      return index
-  return None
-
-
-def find_min_node(node_list: List[Node]):
+def find_min_node(node_dict: Dict[Tuple, Node]):
   current_min = sys.maxsize
   current_node = None
-  for node in node_list:
-    if node.dist < current_min:
-      current_min = node.dist
-      current_node = node
+  for node_k, node_v in node_dict.items():
+    if node_v.dist < current_min:
+      current_min = node_v.dist
+      current_node = node_k
   return current_node
 
 
-def visit(node: Node,
-          visited: List[Node],
-          unvisited: List[Node]):
+def visit(node_k: Tuple,
+          visited: Dict[Tuple, Node],
+          unvisited: Dict[Tuple, Node]):
 
   # Calculate cost to each neighbor
-  neighbors = (Node(node.pos + node.dir, node.dir, node.dist + 1),
-               Node(node.pos + clkw(node.dir), clkw(node.dir), node.dist + 1001),
-               Node(node.pos + cclkw(node.dir), cclkw(node.dir), node.dist + 1001))
-  for neighbor in neighbors:
-    if maze[tuple(neighbor.pos)] == "#":
+  node_v = unvisited[node_k]
+  neighbors = {tuple(array(node_k) + node_v.dir): Node(node_v.dir, node_v.dist + 1),
+               tuple(array(node_k) + clkw(node_v.dir)): Node(clkw(node_v.dir), node_v.dist + 1001),
+               tuple(array(node_k) + cclkw(node_v.dir)): Node(cclkw(node_v.dir), node_v.dist + 1001)}
+  for neighbor_k, neighbor_v in neighbors.items():
+    if maze[neighbor_k] == "#":
       continue
-    if pos_in_node_list(neighbor.pos, visited) is not None:
+    if neighbor_k in visited:
       # No need to visit a node twice
       continue
-    node_index = pos_in_node_list(neighbor.pos, unvisited)
-    if node_index is None:
-      unvisited.append(neighbor)
+    if neighbor_k not in unvisited:
+      unvisited[neighbor_k] = neighbor_v
     else:
-      if unvisited[node_index].dist > neighbor.dist:
-        unvisited[node_index] = neighbor
+      if unvisited[neighbor_k].dist > neighbor_v.dist:
+        unvisited[neighbor_k] = neighbor_v
 
   # Finally, mark this node as visited, and remove it from unvisited
-  visited.append(node)
-  node_index = pos_in_node_list(node.pos, unvisited)
-  unvisited.pop(node_index)
+  visited[node_k] = node_v
+  unvisited.pop(node_k)
 
 
 maze = array([[c for c in line.strip()]
@@ -75,11 +66,11 @@ maze = array([[c for c in line.strip()]
 start: NDArray = array(tuple(w[0] for w in where(maze == "S")))
 end: NDArray = array(tuple(w[0] for w in where(maze == "E")))
 
-unvisited: List[Node] = [Node(start, array((0, 1)), 0)]
-visited: List[Node] = []
+unvisited: Dict[Tuple, Node] = {tuple(start): Node(array((0, 1)), 0)}
+visited: Dict[Tuple, Node] = {}
 
-while pos_in_node_list(end, visited) is None:
+while tuple(end) not in visited:
   node = find_min_node(unvisited)
   visit(node, visited, unvisited)
 
-print(f"Part 1: {visited[pos_in_node_list(end, visited)].dist}")
+print(f"Part 1: {visited[tuple(end)].dist}")
