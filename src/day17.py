@@ -12,17 +12,18 @@ def combo(operand):
 
 
 def adv(operand):
-  num = regs[0]
-  den = 2**combo(operand)
-  regs[0] = int(num / den)
+  global regs
+  regs[0] >>= combo(operand)
 
 
 def bxl(operand):
+  global regs
   regs[1] ^= operand
 
 
 def bst(operand):
-  regs[1] = combo(operand) % 8
+  global regs
+  regs[1] = combo(operand) & 7
 
 
 def jnz(operand):
@@ -32,24 +33,23 @@ def jnz(operand):
 
 
 def bxc(_):
+  global regs
   regs[1] ^= regs[2]
 
 
 def out(operand):
   global output
-  output.append(str(combo(operand) % 8))
+  output.append(str(combo(operand) & 7))
 
 
 def bdv(operand):
-  num = regs[0]
-  den = 2**combo(operand)
-  regs[1] = int(num / den)
+  global regs
+  regs[1] = regs[0] >> combo(operand)
 
 
 def cdv(operand):
-  num = regs[0]
-  den = 2**combo(operand)
-  regs[2] = int(num / den)
+  global regs
+  regs[2] = regs[0] >> combo(operand)
 
 
 program_input = [line.strip() for line in open(sys.argv[1]).readlines()]
@@ -70,4 +70,20 @@ while ip < len(prog) - 1:
   opcodes[opcode](operand)
   ip += 2
 
-print(",".join(output))
+print(f"Part 1: {','.join(output)}")
+
+prog_str = ",".join([str(p) for p in prog])
+a_start = -1
+while ",".join(output) != prog_str:
+  a_start += 1
+  regs = [a_start, 0, 0]
+  ip = 0
+  output = []
+  while ip < len(prog) - 1:
+    opcode = prog[ip]
+    operand = prog[ip + 1]
+    opcodes[opcode](operand)
+    ip += 2
+
+# Program: 0,3,5,4,3,0
+print(a_start)
