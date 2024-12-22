@@ -1,7 +1,6 @@
 import sys
-from numpy import array, where, array_equal, set_printoptions
-from itertools import product
-from typing import Set, Tuple, List, Dict
+from numpy import array, where
+from typing import Tuple, Dict
 from numpy.typing import NDArray
 from dataclasses import dataclass
 
@@ -16,6 +15,13 @@ def cclkw(d):
   # (0, 1) -> (-1, 0)
   # (-1, 0) -> (0, -1)
   return array((-d[1], d[0]))
+
+
+def passthru(d):
+  return d
+
+
+dir_funcs = [(cclkw, 1001), (passthru, 1), (clkw, 1001)]
 
 
 @dataclass
@@ -40,9 +46,10 @@ def visit(node_k: Tuple,
 
   # Calculate cost to each neighbor
   node_v = unvisited[node_k]
-  neighbors = {tuple(array(node_k) + node_v.dir): Node(node_v.dir, node_v.dist + 1),
-               tuple(array(node_k) + clkw(node_v.dir)): Node(clkw(node_v.dir), node_v.dist + 1001),
-               tuple(array(node_k) + cclkw(node_v.dir)): Node(cclkw(node_v.dir), node_v.dist + 1001)}
+  neighbors = {}
+  for i in range(3):
+    neighbors[tuple(array(node_k) + dir_funcs[i][0](node_v.dir))
+              ] = Node(dir_funcs[i][0](node_v.dir), node_v.dist + dir_funcs[i][1])
   for neighbor_k, neighbor_v in neighbors.items():
     if maze[neighbor_k] == "#":
       continue
@@ -61,17 +68,39 @@ def visit(node_k: Tuple,
 
 
 def walk_back(node_k: Tuple,
+              from_node_k: Tuple,
               visited: Dict[Tuple, Node]):
   global pt2_counter
   node_v = visited[node_k]
+  from_node_v = visited[from_node_k]
 
   # For each neighbor, walk back if cost is lower
   for _ in range(4):
     neighbor = tuple(array(node_k) + node_v.dir)
     if neighbor in visited:
+      counted = False
+      # This took far too long to debug! Basically as we're looking for lower
+      # costs, we have to consider the cost of turning. Therefor we have to
+      # consider a chain of 3 nodes... "from" node, "current" node, and "neighbor" node.
+      # - If "from" -> "current" -> "neighbor" create an L (90 deg turn), then we must
+      #   componsate this by subtracting 1000
+      # - If "from" -> "current" -> "neighbor" creates an | (no turn), then we don't
+      #   want to componsate, as we will pick up extraneous nodes.
       if visited[neighbor].dist < node_v.dist:
-        pt2_counter += 1
-        walk_back(neighbor, visited)
+        counted = True
+      else:
+        from_dir = tuple(array(node_k) - array(from_node_k))
+        neighbor_dir = tuple(array(neighbor) - array(node_k))
+        if from_dir != neighbor_dir:
+          if visited[neighbor].dist < from_node_v.dist - 1001:
+            counted = True
+        else:
+          if visited[neighbor].dist < from_node_v.dist - 1:
+            counted = True
+
+      if counted:
+        pt2_counter.add(neighbor)
+        walk_back(neighbor, node_k, visited)
     node_v.dir = clkw(node_v.dir)
 
 
@@ -92,6 +121,7 @@ print(f"Part 1: {visited[tuple(end)].dist}")
 
 # Starting at the "E", go to each neighbor that has a lower cost
 # Recurse until all lowest-cost paths reach the "S"
-pt2_counter = 0
-walk_back(tuple(end), visited)
-print(pt2_counter)
+pt2_counter = set()
+walk_back(tuple(end), tuple(end), visited)
+
+print(f"Part 2: {len(pt2_counter) + 1}")
