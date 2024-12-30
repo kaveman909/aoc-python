@@ -72,18 +72,20 @@ while ip < len(prog) - 1:
 
 print(f"Part 1: {','.join(output)}")
 
-prog_str = ",".join([str(p) for p in prog])
-a_start = -1
-while ",".join(output) != prog_str:
-  a_start += 1
-  regs = [a_start, 0, 0]
-  ip = 0
+a_start = 1
+for i in range(len(prog)):
+  prog_str = ",".join([str(p) for p in prog[len(prog) - i - 1:]])
+  a_start -= 1
+  a_start <<= 3
   output = []
-  while ip < len(prog) - 1:
-    opcode = prog[ip]
-    operand = prog[ip + 1]
-    opcodes[opcode](operand)
-    ip += 2
-
-# Program: 0,3,5,4,3,0
-print(a_start)
+  while ",".join(output) != prog_str:
+    regs = [a_start, 0, 0]
+    ip = 0
+    output = []
+    while ip < len(prog) - 1:
+      opcode = prog[ip]
+      operand = prog[ip + 1]
+      opcodes[opcode](operand)
+      ip += 2
+    a_start += 1
+print(f"Part 2: {a_start - 1}")
