@@ -2,6 +2,8 @@ import sys
 from numpy import array, where
 from networkx import Graph, shortest_path_length
 from multiprocessing import Pool, cpu_count
+from itertools import chain
+from functools import partial
 
 grid = array([[c for c in l.strip()] for l in open(sys.argv[1]).readlines()])
 rows, cols = grid.shape
@@ -38,26 +40,23 @@ def get_path_length(track):
   return (track, shortest_path_length(g, track, e))
 
 
+def get_time_saved(track, dist_dict):
+  ret = []
+  for dir in cheat_dirs:
+    nbr = tuple(array(track) + array(dir))
+    if nbr in tracks:
+      t_saved = dist_dict[track] - dist_dict[nbr] - 2
+      if t_saved > 0:
+        ret.append(t_saved)
+  return ret
+
+
 if __name__ == "__main__":
   with Pool(cpu_count()) as pool:
     dist_dict = {k: v for k, v in pool.map(get_path_length, tracks)}
 
-  t_saved_dict = {}
-
-  for track in tracks:
-    for dir in cheat_dirs:
-      nbr = tuple(array(track) + array(dir))
-      if nbr in tracks:
-        t_saved = dist_dict[track] - dist_dict[nbr] - 2
-        if t_saved > 0:
-          if t_saved not in t_saved_dict:
-            t_saved_dict[t_saved] = 1
-          else:
-            t_saved_dict[t_saved] += 1
+  get_time_saved_with_dist_dict = partial(get_time_saved, dist_dict=dist_dict)
+  with Pool(cpu_count()) as pool:
+    ret = chain.from_iterable(pool.map(get_time_saved_with_dist_dict, tracks))
   
-  total = 0
-  for k, v in t_saved_dict.items():
-    if k >= 100:
-      total += v
-  
-  print(f"Part 1: {total}")
+  print(f"Part 1: {sum(map(lambda x: x >= 100, ret))}")
