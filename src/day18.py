@@ -27,10 +27,9 @@ for node in nodes:
   if grid[node] == "#":
     continue
   for dir in dirs:
-    n = tuple(array(node) + array(dir))
-    ny, nx = n
+    ny, nx = tuple(array(node) + array(dir))
     if 0 <= ny <= my and 0 <= nx <= mx:
-      if grid[n] == ".":
+      if grid[ny, nx] == ".":
         n_list.append((int(ny), int(nx)))
   adj_dict[node] = tuple(n_list)
 
