@@ -2,7 +2,7 @@ import sys
 from functools import reduce
 from numpy import array
 from itertools import product
-from networkx import Graph, shortest_path_length
+from networkx import Graph, shortest_path_length, exception
 
 coords = [(int(ll[1]), int(ll[0]))
           for l in open(sys.argv[1]).readlines() if (ll := l.strip().split(","))]
@@ -36,3 +36,11 @@ for node in nodes:
 G = Graph(adj_dict)
 
 print(f"Part 1: {shortest_path_length(G, (0, 0), (my, mx))}")
+
+for coord in coords[1024:]:
+  G.remove_node(coord)
+  try:
+    shortest_path_length(G, (0, 0), (my, mx))
+  except exception.NetworkXNoPath:
+    print(f"Part 2: {coord[1]},{coord[0]}")
+    break
