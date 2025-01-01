@@ -1,7 +1,8 @@
 import sys
 from networkx import DiGraph, all_shortest_paths
+from itertools import product
 
-codes = [['A'] + [c for c in l.strip()]
+codes = [[c for c in l.strip()]
          for l in open(sys.argv[1]).readlines()]
 
 
@@ -17,6 +18,10 @@ def get_shortest_path_dirs(g, src, dst):
       dirs.append(g[u][v]['d'])
     all_dirs.append(dirs + ['A'])
   return all_dirs
+
+
+def flatten_moves(moves):
+    return [sum(comb, []) for comb in product(*moves)]
 
 
 # Numeric keypad
@@ -63,9 +68,13 @@ graph_dir = DiGraph(adj_dict_dir)
 # print(get_shortest_path_dirs(graph_dir, 'A', '<'))
 # print(get_shortest_path_dirs(graph_dir, '<', 'A'))
 
-code = codes[0]
+code = ['A'] + codes[0]
+moves = []
 for i in range(len(code) - 1):
   src = code[i]
   dst = code[i + 1]
-  num_paths = get_shortest_path_dirs(graph_numeric, src, dst)
-  print(num_paths)
+  moves.append(get_shortest_path_dirs(graph_numeric, src, dst))
+
+flat_moves = flatten_moves(moves)
+for move in flat_moves:
+  print("".join(move))
