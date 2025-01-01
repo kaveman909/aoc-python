@@ -1,7 +1,7 @@
 import sys
 from networkx import DiGraph, all_shortest_paths
 
-codes = [[c for c in l.strip()]
+codes = [['A'] + [c for c in l.strip()]
          for l in open(sys.argv[1]).readlines()]
 
 
@@ -15,7 +15,7 @@ def get_shortest_path_dirs(g, src, dst):
     dirs = []
     for u, v in zip(path, path[1:]):  # Iterate through consecutive node pairs
       dirs.append(g[u][v]['d'])
-    all_dirs.append(dirs)
+    all_dirs.append(dirs + ['A'])
   return all_dirs
 
 
@@ -35,6 +35,7 @@ adj_dict_numeric = {
     '9': {'8': {'d': '<'}, '6': {'d': 'v'}},
     '4': {'7': {'d': '^'}, '5': {'d': '>'}, '1': {'d': 'v'}},
     '5': {'4': {'d': '<'}, '8': {'d': '^'}, '6': {'d': '>'}, '2': {'d': 'v'}},
+    '6': {'9': {'d': '^'}, '5': {'d': '<'}, '3': {'d': 'v'}},
     '1': {'4': {'d': '^'}, '2': {'d': '>'}},
     '2': {'1': {'d': '<'}, '5': {'d': '^'}, '3': {'d': '>'}, '0': {'d': 'v'}},
     '3': {'6': {'d': '^'}, '2': {'d': '<'}, 'A': {'d': 'v'}},
@@ -42,8 +43,8 @@ adj_dict_numeric = {
     'A': {'0': {'d': '<'}, '3': {'d': '^'}}
 }
 graph_numeric = DiGraph(adj_dict_numeric)
-print(get_shortest_path_dirs(graph_numeric, '7', 'A'))
-print(get_shortest_path_dirs(graph_numeric, 'A', '7'))
+# print(get_shortest_path_dirs(graph_numeric, '7', 'A'))
+# print(get_shortest_path_dirs(graph_numeric, 'A', '7'))
 
 # Directional keypad
 #     +---+---+
@@ -59,5 +60,12 @@ adj_dict_dir = {
     '>': {'v': {'d': '<'}, 'A': {'d': '^'}}
 }
 graph_dir = DiGraph(adj_dict_dir)
-print(get_shortest_path_dirs(graph_dir, 'A', '<'))
-print(get_shortest_path_dirs(graph_dir, '<', 'A'))
+# print(get_shortest_path_dirs(graph_dir, 'A', '<'))
+# print(get_shortest_path_dirs(graph_dir, '<', 'A'))
+
+code = codes[0]
+for i in range(len(code) - 1):
+  src = code[i]
+  dst = code[i + 1]
+  num_paths = get_shortest_path_dirs(graph_numeric, src, dst)
+  print(num_paths)
