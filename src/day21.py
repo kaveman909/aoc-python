@@ -1,21 +1,22 @@
 import sys
 from networkx import DiGraph, all_shortest_paths
 from itertools import product
+from functools import cache
 
 codes = [[c for c in l.strip()]
          for l in open(sys.argv[1]).readlines()]
 
-
-def get_shortest_path_dirs(g, src, dst):
+@cache
+def get_shortest_path_dirs(gk, src, dst):
 
   all_dirs = []
-  paths = list(all_shortest_paths(g, source=src, target=dst))
+  paths = list(all_shortest_paths(graph_dict[gk], source=src, target=dst))
 
   # Iterate over each path
   for path in paths:
     dirs = []
     for u, v in zip(path, path[1:]):  # Iterate through consecutive node pairs
-      dirs.append(g[u][v]['d'])
+      dirs.append(graph_dict[gk][u][v]['d'])
     all_dirs.append(dirs + ['A'])
   return all_dirs
 
@@ -75,23 +76,27 @@ adj_dict_dir = {
 }
 graph_dir = DiGraph(adj_dict_dir)
 
+# Setup map for graphs to use with caching
+graph_dict = {
+  0: graph_numeric,
+  1: graph_dir
+}
+
 # Robot using numeric keypad
-# for code in codes
-flat_moves = get_all_moves(codes[0], graph_numeric)
-for move in flat_moves:
-  print("".join(move))
-print("****************")
+complexities = []
+for code in codes:
+  flat_moves = get_all_moves(code, 0)
 
-# 1st robot using directional keypad
-# for move in flat_moves:
-flat_moves1 = get_all_moves(flat_moves[2], graph_dir)
-for move in flat_moves1:
-  print("".join(move))
-print("****************")
+  final_move_min = 1_000_000
+  for move1 in flat_moves:
+    # 1st robot using directional keypad
+    flat_moves1 = get_all_moves(move1, 1)
+    for move2 in flat_moves1:
+      # 2nd robot using directional keypad
+      flat_moves2 = get_all_moves(move2, 1)
+      final_move_min = min(final_move_min, min(map(len, flat_moves2)))
 
-# 2nd robot using directional keypad
-# for move in flat_moves1:
-flat_moves2 = get_all_moves(flat_moves1[25], graph_dir)
-for move in flat_moves2:
-  print("".join(move))
-print("****************")
+  code_int = int("".join(code[:-1]))
+  complexities.append(code_int * final_move_min)
+
+print(f"Part 1: {sum(complexities)}")
