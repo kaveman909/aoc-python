@@ -68,6 +68,8 @@ graph_dir = DiGraph(adj_dict_dir)
 # print(get_shortest_path_dirs(graph_dir, 'A', '<'))
 # print(get_shortest_path_dirs(graph_dir, '<', 'A'))
 
+# Robot using numeric keypad
+# for code in codes
 code = ['A'] + codes[0]
 moves = []
 for i in range(len(code) - 1):
@@ -77,4 +79,32 @@ for i in range(len(code) - 1):
 
 flat_moves = flatten_moves(moves)
 for move in flat_moves:
+  print("".join(move))
+print("****************")
+
+# 1st robot using directional keypad
+# for move in flat_moves:
+move = ['A'] + flat_moves[2]
+moves1 = []
+for i in range(len(move) - 1):
+  src = move[i]
+  dst = move[i + 1]
+  moves1.append(get_shortest_path_dirs(graph_dir, src, dst))
+
+flat_moves1 = flatten_moves(moves1)
+for move in flat_moves1:
+  print("".join(move))
+print("****************")
+
+# 2nd robot using directional keypad
+# for move in flat_moves1:
+move = ['A'] + flat_moves1[25]
+moves2 = []
+for i in range(len(move) - 1):
+  src = move[i]
+  dst = move[i + 1]
+  moves2.append(get_shortest_path_dirs(graph_dir, src, dst))
+
+flat_moves2 = flatten_moves(moves2)
+for move in flat_moves2:
   print("".join(move))
