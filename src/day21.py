@@ -24,6 +24,17 @@ def flatten_moves(moves):
     return [sum(comb, []) for comb in product(*moves)]
 
 
+def get_all_moves(in_move, graph):
+  move = ['A'] + in_move
+  moves = []
+  for i in range(len(move) - 1):
+    src = move[i]
+    dst = move[i + 1]
+    moves.append(get_shortest_path_dirs(graph, src, dst))
+  
+  return flatten_moves(moves)
+
+
 # Numeric keypad
 # +---+---+---+
 # | 7 | 8 | 9 |
@@ -48,8 +59,6 @@ adj_dict_numeric = {
     'A': {'0': {'d': '<'}, '3': {'d': '^'}}
 }
 graph_numeric = DiGraph(adj_dict_numeric)
-# print(get_shortest_path_dirs(graph_numeric, '7', 'A'))
-# print(get_shortest_path_dirs(graph_numeric, 'A', '7'))
 
 # Directional keypad
 #     +---+---+
@@ -65,46 +74,24 @@ adj_dict_dir = {
     '>': {'v': {'d': '<'}, 'A': {'d': '^'}}
 }
 graph_dir = DiGraph(adj_dict_dir)
-# print(get_shortest_path_dirs(graph_dir, 'A', '<'))
-# print(get_shortest_path_dirs(graph_dir, '<', 'A'))
 
 # Robot using numeric keypad
 # for code in codes
-code = ['A'] + codes[0]
-moves = []
-for i in range(len(code) - 1):
-  src = code[i]
-  dst = code[i + 1]
-  moves.append(get_shortest_path_dirs(graph_numeric, src, dst))
-
-flat_moves = flatten_moves(moves)
+flat_moves = get_all_moves(codes[0], graph_numeric)
 for move in flat_moves:
   print("".join(move))
 print("****************")
 
 # 1st robot using directional keypad
 # for move in flat_moves:
-move = ['A'] + flat_moves[2]
-moves1 = []
-for i in range(len(move) - 1):
-  src = move[i]
-  dst = move[i + 1]
-  moves1.append(get_shortest_path_dirs(graph_dir, src, dst))
-
-flat_moves1 = flatten_moves(moves1)
+flat_moves1 = get_all_moves(flat_moves[2], graph_dir)
 for move in flat_moves1:
   print("".join(move))
 print("****************")
 
 # 2nd robot using directional keypad
 # for move in flat_moves1:
-move = ['A'] + flat_moves1[25]
-moves2 = []
-for i in range(len(move) - 1):
-  src = move[i]
-  dst = move[i + 1]
-  moves2.append(get_shortest_path_dirs(graph_dir, src, dst))
-
-flat_moves2 = flatten_moves(moves2)
+flat_moves2 = get_all_moves(flat_moves1[25], graph_dir)
 for move in flat_moves2:
   print("".join(move))
+print("****************")
